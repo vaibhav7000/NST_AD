@@ -1,0 +1,163 @@
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+body {
+  background-color: #f8fafc;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  color: #1e293b;
+}
+
+.page-container {
+  width: 100%;
+  max-width: 860px;
+  padding: 40px 20px;
+  margin: 0 auto;
+}
+
+/* Header */
+.header-section {
+  text-align: center;
+  margin-bottom: 28px;
+}
+
+.header-section h1 {
+  font-size: 22px;
+  font-weight: 700;
+  color: #0f172a;
+  margin-bottom: 6px;
+}
+
+.header-section p {
+  font-size: 16px;
+  color: #475569;
+  font-weight: 500;
+}
+
+/* Main Card Wrapper */
+.card-container {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 36px;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.02);
+  margin-bottom: 24px;
+}
+
+/* Section Item */
+.permission-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.icon-box {
+  width: 44px;
+  height: 44px;
+  background-color: #f1f5f9;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #0f172a;
+  flex-shrink: 0;
+}
+
+.permission-content h3 {
+  font-size: 18px;
+  font-weight: 700;
+  color: #0f172a;
+  margin-bottom: 6px;
+}
+
+.permission-content p {
+  font-size: 14px;
+  color: #64748b;
+  margin-bottom: 20px;
+}
+
+/* Divider Line */
+.divider {
+  height: 1px;
+  background-color: #f1f5f9;
+  margin: 32px 0;
+}
+
+/* Action Row & Video Preview */
+.action-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.video-preview {
+  border-radius: 6px;
+  background: #000;
+}
+
+/* Base Buttons */
+.btn {
+  padding: 12px 22px;
+  font-size: 14px;
+  font-weight: 600;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+}
+
+.btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+/* Dark Button */
+.btn-black {
+  background-color: #050505;
+  color: #ffffff;
+}
+
+.btn-black:hover:not(:disabled) {
+  background-color: #262626;
+}
+
+/* Muted/Disabled appearance matching image */
+.btn-secondary {
+  background-color: #aeb7c4;
+  color: #ffffff;
+}
+
+.btn-secondary:hover:not(:disabled) {
+  background-color: #94a3b8;
+}
+
+/* Bottom Action Buttons */
+.bottom-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.btn-primary {
+  background-color: #8bb4f8;
+  color: #ffffff;
+}
+
+.btn-primary:not(:disabled) {
+  background-color: #2563eb;
+}
+
+.btn-outline {
+  background-color: #ffffff;
+  color: #0f172a;
+  border: 1px solid #cbd5e1;
+}
+
+.btn-outline:hover {
+  background-color: #f8fafc;
+}
