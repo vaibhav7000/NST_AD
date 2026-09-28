@@ -2,15 +2,23 @@
 import { useEffect, useRef, useState } from 'react'
 import './App.css'
 
+// Note: Screen Preview Capture, Application Menu, Menu Tray, and Disable
+// Ctrl/Cmd+C all run in app.js (main process) — nothing to wire up here.
+
 function App() {
   // state variables
   const [cameraEnabled, setCameraEnabled] = useState(false);
+  const [screenShareEnabled, setScreenShareEnabled] = useState(false);
   const [fullScreen, setFullScreen] = useState(false);
-  const [timer, setTimer] = useState('');
+  const [timer, setTimer] = useState(0);
+  const [examStarted, setExamStarted] = useState(false);
 
-  // ref variables
-  const videoRef = useRef(null);
+  // ref variables — one video element per feed, so camera and screen
+  // share never overwrite each other.
+  const cameraVideoRef = useRef(null);
+  const screenVideoRef = useRef(null);
 
+  const allChecksReady = cameraEnabled && screenShareEnabled && fullScreen;
 
   useEffect(() => {
     // Register Listener for handling Timer Tick from Main
@@ -25,39 +33,54 @@ function App() {
     };
   }, []);
 
+  // Feature: Parallel Save — takes a still frame from the live camera feed
+  // each time main fires 'camera-shot'. Screen preview capture happens
+  // independently in main via desktopCapturer.
   async function saveVideoScreenShots() {
-    if (!videoRef.current || !videoRef.current.srcObject) {
+    if (!cameraVideoRef.current || !cameraVideoRef.current.srcObject) {
       return;
     }
 
     try {
-      const track = videoRef.current.srcObject.getVideoTracks()[0];
+      const track = cameraVideoRef.current.srcObject.getVideoTracks()[0];
       if (!track) return;
 
-      // Use ImageCapture API
       const imageCapture = new ImageCapture(track);
       const blob = await imageCapture.takePhoto();
       const arrayBuffer = await blob.arrayBuffer();
 
-      // Send raw binary buffer to main process
       window.athena.storeCameraSnapImageOnDisk(arrayBuffer);
     } catch (error) {
       console.error("Failed to capture image via ImageCapture:", error);
     }
   }
 
+  // Camera permission — identity check, uses getUserMedia (webcam).
   async function getCameraAccess() {
     try {
-      const videoData = await navigator.mediaDevices.getUserMedia({
-        video: true
-      });
-
-      if (videoRef.current) {
-        videoRef.current.srcObject = videoData
+      const cameraStream = await navigator.mediaDevices.getUserMedia({ video: true });
+      console.log(cameraStream);
+      if (cameraVideoRef.current) {
+        cameraVideoRef.current.srcObject = cameraStream;
       }
       setCameraEnabled(true);
     } catch (error) {
-      alert('Cannot access Camera');
+      alert('Cannot access camera. Please allow camera permissions and try again.');
+    }
+  }
+
+  // Screen share permission — separate from the camera, uses
+  // getDisplayMedia (screen/window capture).
+  async function getScreenShareAccess() {
+    try {
+      const screenStream = await navigator.mediaDevices.getDisplayMedia({ video: true });
+
+      if (screenVideoRef.current) {
+        screenVideoRef.current.srcObject = screenStream;
+      }
+      setScreenShareEnabled(true);
+    } catch (error) {
+      alert('Cannot access screen share. Please allow screen sharing and try again.');
     }
   }
 
@@ -66,110 +89,177 @@ function App() {
       await document.documentElement.requestFullscreen();
       setFullScreen(true);
     } catch (error) {
-      alert('Cannot access full screen');
+      alert('Cannot switch to full screen.');
     }
   }
 
+  async function startExam() {
+    try {
+      await window.athena.startTimerOnMain();
+      setExamStarted(true);
+    } catch (error) {
+      // ignored — main already logs failures on its side
+    }
+  }
+
+  function formatElapsed(totalSeconds) {
+    const seconds = Math.max(0, Math.floor(totalSeconds || 0));
+    const mm = String(Math.floor(seconds / 60)).padStart(2, '0');
+    const ss = String(seconds % 60).padStart(2, '0');
+    return `${mm}:${ss}`;
+  }
 
   return (
-    <div className="page-container">
-      {/* Main Card */}
-      <div className="card-container">
-        {/* Section 1: Camera / Heimdall */}
-        <div className="permission-item">
-          <div className="permission-content">
-            <h3>Configure Camera</h3>
-            <p>Kindly configure Camera to attempt quiz/contests.</p>
-            <div className="action-row">
-              <button
-                className="btn btn-black"
-                disabled={cameraEnabled}
-                onClick={getCameraAccess}
-              >
-                {cameraEnabled ? 'Camera Connected' : 'Get Camera Access'}
-              </button>
+    <div className="page">
+      <header className="page-header">
+        <h1>Exam readiness check</h1>
+        <p>Camera, screen sharing, and full screen all need to be on before the exam can begin.</p>
+      </header>
 
-              {/* Hidden/Active Video Feed Preview */}
+      <div className="checklist">
+        {/* Check 1: Camera */}
+        <div className="check-row">
+          <div className="check-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M15 8l4.553-2.276A1 1 0 0 1 21 6.618v10.764a1 1 0 0 1-1.447.894L15 16" />
+              <rect x="3" y="6" width="12" height="12" rx="2" />
+            </svg>
+          </div>
+
+          <div className="check-body">
+            <h3>Camera</h3>
+            <p>Used to verify it's you during the exam.</p>
+
+            <div className="check-action">
+              {cameraEnabled ? (
+                <span className="check-status is-ready">
+                  <CheckmarkIcon /> Camera connected
+                </span>
+              ) : (
+                <button className="btn btn-primary" onClick={getCameraAccess}>
+                  Allow camera access
+                </button>
+              )}
+
               <video
-                ref={videoRef}
+                ref={cameraVideoRef}
                 autoPlay
                 playsInline
-                className={`video-preview`}
+                muted
+                className={`preview ${cameraEnabled ? '' : 'is-hidden'}`}
               />
             </div>
           </div>
         </div>
 
-        <div className="divider"></div>
+        <div className="divider" />
 
-        {/* Section 2: Fullscreen */}
-        <div className="permission-item">
-          <div className="permission-content">
-            <h3>Switch to full screen</h3>
-            <button
-              className="btn btn-primary"
-              disabled={fullScreen}
-              onClick={() => {
-                enableFullScreen();
-              }}
-            >
-              {fullScreen ? 'Full Screen Enabled' : 'Give Full Screen Permissions'}
-            </button>
+        {/* Check 2: Screen Share */}
+        <div className="check-row">
+          <div className="check-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+              <rect x="2.5" y="4.5" width="19" height="13" rx="1.5" />
+              <path d="M8 21h8M12 17.5V21" />
+            </svg>
+          </div>
+
+          <div className="check-body">
+            <h3>Screen sharing</h3>
+            <p>Lets the proctor see what's on your screen throughout the exam.</p>
+
+            <div className="check-action">
+              {screenShareEnabled ? (
+                <span className="check-status is-ready">
+                  <CheckmarkIcon /> Screen sharing active
+                </span>
+              ) : (
+                <button className="btn btn-primary" onClick={getScreenShareAccess}>
+                  Share your screen
+                </button>
+              )}
+
+              <video
+                ref={screenVideoRef}
+                autoPlay
+                playsInline
+                muted
+                className={`preview ${screenShareEnabled ? '' : 'is-hidden'}`}
+              />
+            </div>
+          </div>
+        </div>
+
+        <div className="divider" />
+
+        {/* Check 3: Full screen */}
+        <div className="check-row">
+          <div className="check-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M9 3H3v6M15 3h6v6M21 15v6h-6M3 15v6h6" />
+            </svg>
+          </div>
+
+          <div className="check-body">
+            <h3>Full screen</h3>
+            <p>Stays on for the whole exam — leaving it may be flagged.</p>
+
+            <div className="check-action">
+              {fullScreen ? (
+                <span className="check-status is-ready">
+                  <CheckmarkIcon /> Full screen locked in
+                </span>
+              ) : (
+                <button className="btn btn-primary" onClick={enableFullScreen}>
+                  Switch to full screen
+                </button>
+              )}
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Bottom Action Buttons */}
-      <div className="bottom-actions">
-        <button
-          className="btn btn-primary"
-          disabled={!cameraEnabled || !fullScreen}
-          onClick={async () => {
-            try {
-              const response = await window.athena.startTimerOnMain();
-            } catch (error) {
-
-            }
-          }}
-        >
-          Go To Test
-        </button>
-      </div>
-
-      <div>
-        {timer + ' (s) elapsed'}
-      </div>
-
-      <div>
-        <button onClick={() => {
-          saveVideoScreenShots()
-        }}>
-          saveVideoScreenShots
-        </button>
-      </div>
-
-
-      <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
-        <button onClick={() => {
-          window.athena.showRules()
-        }}>
-          Show Native Rules
+      <div className="start-area">
+        <button className="btn btn-begin" disabled={!allChecksReady || examStarted} onClick={startExam}>
+          {examStarted ? 'Exam in progress' : 'Begin exam'}
         </button>
 
-        <button onClick={() => { alert("Rules ...") }}>
-          Show Chromium Rules
-        </button>
+        {examStarted && (
+          <div className="elapsed">
+            <span className="elapsed-time">{formatElapsed(timer)}</span>
+            <span className="elapsed-label">elapsed</span>
+          </div>
+        )}
       </div>
 
-      <div>
-        <button onClick={() => {
-          window.athena.selectFolder()
-        }}>
-          Select folder
-        </button>
-      </div>
-
+      {/* Utility / debug tools — tucked away so they don't compete with
+          the actual exam flow. Handy while building, safe to strip out
+          of a production build. */}
+      <details className="tools">
+        <summary>Troubleshooting &amp; manual tools</summary>
+        <div className="tools-actions">
+          <button className="btn btn-quiet" onClick={() => saveVideoScreenShots()}>
+            Save screenshot now
+          </button>
+          <button className="btn btn-quiet" onClick={() => window.athena.showRules()}>
+            Show native rules dialog
+          </button>
+          <button className="btn btn-quiet" onClick={() => alert('Rules ...')}>
+            Show chromium rules
+          </button>
+          <button className="btn btn-quiet" onClick={() => window.athena.selectFolder()}>
+            Select folder
+          </button>
+        </div>
+      </details>
     </div>
+  );
+}
+
+function CheckmarkIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <polyline points="20 6 9 17 4 12" />
+    </svg>
   );
 }
 

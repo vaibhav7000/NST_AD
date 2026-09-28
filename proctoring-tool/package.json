@@ -3,18 +3,27 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
+  "main": "app/app.js",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "electron": "electron ./app/app.js"
+    "electron": "electron ./app/app.js",
+    "package": "electron-forge package",
+    "make": "electron-forge make"
+  },
+  "mac": {
+    "target": "dmg",
+    "identity": null
   },
   "dependencies": {
     "react": "^19.2.8",
     "react-dom": "^19.2.8"
   },
   "devDependencies": {
+    "@electron-forge/cli": "^7.11.2",
+    "@electron-forge/maker-dmg": "^7.11.2",
     "@eslint/js": "^10.0.1",
     "@types/react": "^19.2.18",
     "@types/react-dom": "^19.2.7",
