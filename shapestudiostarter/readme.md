@@ -9,6 +9,8 @@ Shape Studio is a drawing app. You drag circles, squares and rectangles onto a c
 
 ## Getting started
 
+You need Node.js installed, plus Expo Go on a phone or a simulator on your computer.
+
 ```bash
 npm install
 npx expo start
