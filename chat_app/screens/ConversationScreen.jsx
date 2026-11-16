@@ -10,7 +10,7 @@ const ConversationScreen = ({ navigation, route }) => {
 
     useEffect(() => {
         setLoading(true)
-        fetch('http://10.7.1.51:3000/conversation', {
+        fetch('http://10.7.1.89:3000/conversation', {
             method: 'GET',
             headers: {
                 authorization: 'Basic first:second'
@@ -18,22 +18,22 @@ const ConversationScreen = ({ navigation, route }) => {
         })
             .then(response => response.json())
             .then(data => {
-                const promiseAll = data.map(d => { 
-                    return fetch(`http://10.7.1.51:3000/user/profile?user_id=${d.createdBy}`, {
+                const promiseAll = data.map(d => {
+                    return fetch(`http://10.7.1.89:3000/user/profile?user_id=${d.createdBy}`, {
                         method: 'GET',
                         headers: {
                             'Authorization': 'Basic first:second',
                         }
                     })
                         .then(response => response.json())
-                        .then(t => { 
+                        .then(t => {
                             return `Created By: ${t.name}`
                         })
                 })
 
                 Promise.all(promiseAll)
-                    .then((d) => { 
-                        d.map((t, index) => { 
+                    .then((d) => {
+                        d.map((t, index) => {
                             data[index] = {
                                 ...data[index],
                                 createdBy: t
@@ -81,7 +81,7 @@ const ConversationScreen = ({ navigation, route }) => {
                                 </View>
                             )
                         })}
-                        </View>
+                    </View>
                 }
             </View>
         </ScrollView>

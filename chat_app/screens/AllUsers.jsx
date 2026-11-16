@@ -16,7 +16,7 @@ const AllUsers = ({
 
     useEffect(() => {
         setLoading(true);
-        fetch('http://10.7.1.51:3000/user', {
+        fetch('http://10.7.1.89:3000/user', {
             headers: {
                 authorization: 'Basic first:second'
             }
