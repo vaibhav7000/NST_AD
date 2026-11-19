@@ -1,0 +1,19 @@
+{
+  "name": "nst-ad-2026-diwali-min-notif",
+  "version": "1.0.0",
+  "main": "index.js",
+  "dependencies": {
+    "@react-native-firebase/app": "^21.14.0",
+    "@react-native-firebase/messaging": "^21.14.0",
+    "expo": "~58.0.26",
+    "react": "19.3.0",
+    "react-native": "0.88.1"
+  },
+  "scripts": {
+    "start": "expo start",
+    "android": "expo run:android",
+    "ios": "expo run:ios",
+    "web": "expo start --web"
+  },
+  "private": true
+}

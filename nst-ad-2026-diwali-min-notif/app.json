@@ -1,0 +1,12 @@
+{
+  "expo": {
+    "name": "nst-ad-2026-diwali-min-notif",
+    "slug": "nst-ad-2026-diwali-min-notif",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "android": {
+      "googleServicesFile": "./google-services.json",
+      "package": "com.ad2026diwali.notificationdemo"
+    }
+  }
+}
