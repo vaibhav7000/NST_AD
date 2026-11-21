@@ -1,20 +1,23 @@
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import { FlatList, StyleSheet, Text, View } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
 import DesignCard from '../components/DesignCard';
 import { COLORS } from '../constants/theme';
+import { getDesigns } from '../storage/designStorage';
 
 // The list of saved designs. This is the first screen of the "Saved" tab's stack.
 export default function SavedScreen({ navigation }) {
   const [designs, setDesigns] = useState([]);
 
-  // TODO (Task 3): Load the designs with getDesigns() and put them in state.
-  // Hint: a tab screen stays mounted when you switch tabs, so a plain
-  // useEffect runs only once. Use useFocusEffect from @react-navigation/native
-  // to reload the list every time the tab is opened.
+  // Reload the list every time this screen is focused.
+  useFocusEffect(
+    useCallback(() => {
+      getDesigns().then(setDesigns);
+    }, [])
+  );
 
   const openDesign = (design) => {
-    // TODO (Task 2): Navigate to the "DesignDetail" screen
-    // and pass the design's id as a route param.
+    navigation.navigate('DesignDetail', { designId: design.id });
   };
 
   return (

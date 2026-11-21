@@ -1,15 +1,26 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import DraggableShape from '../components/DraggableShape';
 import ShapePalette from '../components/ShapePalette';
 import { COLORS, SHAPES } from '../constants/theme';
-// TODO (Task 3): import { saveDesign } from '../storage/designStorage';
+import { saveDesign } from '../storage/designStorage';
 
-export default function DrawScreen() {
+export default function DrawScreen({ route }) {
   const [shapes, setShapes] = useState([]);
+  // When editing a saved design, we keep it here so Save overwrites it.
+  const [editing, setEditing] = useState(null);
   const [canvasSize, setCanvasSize] = useState({ width: 0, height: 0 });
   const [message, setMessage] = useState('');
   const canvasRef = useRef(null);
+
+  // Saved design opened with the Edit button: load it onto the canvas.
+  const editDesign = route?.params?.design;
+  useEffect(() => {
+    if (editDesign) {
+      setEditing(editDesign);
+      setShapes(editDesign.shapes);
+    }
+  }, [editDesign]);
 
   const addShape = (type, x, y) => {
     setShapes((prev) => [...prev, { id: `${Date.now()}-${prev.length}`, type, x, y }]);
@@ -53,16 +64,16 @@ export default function DrawScreen() {
       return;
     }
     const design = {
-      id: Date.now().toString(),
-      createdAt: new Date().toISOString(),
+      id: editing ? editing.id : Date.now().toString(),
+      createdAt: editing ? editing.createdAt : new Date().toISOString(),
       canvas: canvasSize,
       shapes,
     };
 
-    // TODO (Task 3): Save the design with saveDesign(design),
-    // then clear the canvas and show 'Saved to your designs'.
-    console.log('Design to save:', JSON.stringify(design));
-    showMessage('Saving is not built yet (Task 3)');
+    await saveDesign(design);
+    setShapes([]);
+    setEditing(null);
+    showMessage('Saved to your designs');
   };
 
   return (

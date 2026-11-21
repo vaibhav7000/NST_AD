@@ -4,7 +4,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Ionicons } from '@expo/vector-icons';
 import DrawScreen from './src/screens/DrawScreen';
-import SavedScreen from './src/screens/SavedScreen';
+import SavedStack from './src/navigation/SavedStack';
 import { COLORS } from './src/constants/theme';
 
 // Initialize the bottom tab navigator
@@ -40,8 +40,9 @@ export default function App() {
           {/* Tab 2: Saved designs list (will host the stack navigator in Task 2) */}
           <Tab.Screen
             name="Saved"
-            component={SavedScreen}
+            component={SavedStack}
             options={{
+              headerShown: false,
               tabBarIcon: ({ color, size }) => (
                 <Ionicons name="albums-outline" size={size} color={color} />
               ),
