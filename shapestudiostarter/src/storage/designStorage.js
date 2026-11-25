@@ -1,33 +1,28 @@
-// TODO (Task 3): Save designs on the device with AsyncStorage.
-//
-// 1. Install it:  npx expo install @react-native-async-storage/async-storage
-// 2. Import it:   import AsyncStorage from '@react-native-async-storage/async-storage';
-// 3. Store ALL designs as one JSON array under a single key, e.g. '@shape-studio/designs'.
-//    AsyncStorage only stores strings, so use JSON.stringify / JSON.parse.
-//
-// A design looks like:
-// { id, createdAt, canvas: { width, height }, shapes: [{ id, type, x, y }] }
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const STORAGE_KEY = '@shape-studio/designs';
 
 // Return every saved design (newest first), or [] if nothing is saved yet.
 export async function getDesigns() {
-  // TODO
-  return [];
+  const json = await AsyncStorage.getItem(STORAGE_KEY);
+  return json ? JSON.parse(json) : [];
 }
 
-// Add one design to the saved list.
+// Add a design. If a design with the same id exists, it is replaced (used by Edit).
 export async function saveDesign(design) {
-  // TODO
+  const designs = await getDesigns();
+  const others = designs.filter((d) => d.id !== design.id);
+  await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify([design, ...others]));
 }
 
 // Return the design with this id, or null if it does not exist.
 export async function getDesignById(id) {
-  // TODO
-  return null;
+  const designs = await getDesigns();
+  return designs.find((d) => d.id === id) || null;
 }
 
 // Remove the design with this id.
 export async function deleteDesign(id) {
-  // TODO
+  const designs = await getDesigns();
+  await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(designs.filter((d) => d.id !== id)));
 }

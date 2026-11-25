@@ -3,6 +3,7 @@ import { Pressable, ScrollView, StyleSheet, Text, useWindowDimensions, View } fr
 import DesignPreview from '../components/DesignPreview';
 import { formatDate } from '../components/DesignCard';
 import { COLORS, SHAPES, SHAPE_TYPES } from '../constants/theme';
+import { deleteDesign, getDesignById } from '../storage/designStorage';
 
 // Shows one saved design. This is the second screen of the "Saved" tab's stack.
 export default function DesignDetailScreen({ route, navigation }) {
@@ -10,13 +11,12 @@ export default function DesignDetailScreen({ route, navigation }) {
   const { width } = useWindowDimensions();
 
   useEffect(() => {
-    // TODO (Task 2): Read the design id from route.params.
-    // TODO (Task 3): Load that design with getDesignById(id) and store it with setDesign.
-  }, []);
+    getDesignById(route.params.designId).then(setDesign);
+  }, [route.params.designId]);
 
   const handleDelete = async () => {
-    // TODO (Task 3): Delete the design with deleteDesign(id).
-    // TODO (Task 2): Then go back to the Saved list.
+    await deleteDesign(design.id);
+    navigation.goBack();
   };
 
   if (!design) {
@@ -43,6 +43,10 @@ export default function DesignDetailScreen({ route, navigation }) {
           </View>
         ))}
       </View>
+
+      <Pressable style={styles.edit} onPress={() => navigation.navigate('Draw', { design })}>
+        <Text style={styles.editText}>Edit design</Text>
+      </Pressable>
 
       <Pressable style={styles.delete} onPress={handleDelete}>
         <Text style={styles.deleteText}>Delete design</Text>
@@ -92,6 +96,17 @@ const styles = StyleSheet.create({
   statText: {
     fontSize: 14,
     color: COLORS.ink,
+  },
+  edit: {
+    alignSelf: 'stretch',
+    alignItems: 'center',
+    paddingVertical: 12,
+    borderRadius: 12,
+    backgroundColor: COLORS.accent,
+  },
+  editText: {
+    color: '#FFFFFF',
+    fontWeight: '600',
   },
   delete: {
     alignSelf: 'stretch',
